@@ -1,0 +1,24 @@
+version: "3.3"
+
+services:
+
+  generator:
+    build:
+      context: ./generator/
+      dockerfile: Dockerfile
+    container_name: generator
+    restart: always
+    networks:
+      - net
+
+  api:
+    build:
+      context: ./api/
+      dockerfile: Dockerfile
+    container_name: api
+    restart: always
+    networks:
+      - net
+
+networks:
+  net:
