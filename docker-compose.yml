@@ -7,6 +7,7 @@ services:
       context: ./generator/
       dockerfile: Dockerfile
     container_name: generator
+    restart: on-failure
     depends_on:
       - rabbitmq
     networks:
@@ -29,6 +30,7 @@ services:
       context: ./api/
       dockerfile: Dockerfile
     container_name: api
+    restart: on-failure
     depends_on:
       - rabbitmq
     networks:
