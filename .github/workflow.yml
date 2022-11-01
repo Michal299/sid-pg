@@ -1,0 +1,13 @@
+name: Build and push docker images for all services
+
+on:
+  push:
+    branches:
+      - master
+      - composition # to delete
+
+jobs:
+  cd:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
