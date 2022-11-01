@@ -16,9 +16,10 @@ jobs:
       name: Build and push docker image for api
       with:
         image: mcwynar/sid-pg
-        tag: api
+        tags: api
         registry: docker.io
         dockerfile: api/Dockerfile
+        directory: api/
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
     
@@ -26,8 +27,9 @@ jobs:
       name: Build and push docker image for generator
       with:
         image: mcwynar/sid-pg
-        tag: generator
+        tags: generator
         registry: docker.io
         dockerfile: generator/Dockerfile
+        directory: generator/
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
