@@ -7,6 +7,8 @@ services:
       context: ./generator/
       dockerfile: Dockerfile
     container_name: generator
+    depends_on:
+      - rabbitmq
     networks:
       - net
 
@@ -27,6 +29,8 @@ services:
       context: ./api/
       dockerfile: Dockerfile
     container_name: api
+    depends_on:
+      - rabbitmq
     networks:
       - net
 
