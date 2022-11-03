@@ -18,7 +18,6 @@ namespace generator
             using (var channel = connection.CreateModel())
             {
                 TemperatureSensor sensor = new TemperatureSensor(channel);
-
                 while (true)
                 {
                     sensor.publish();
