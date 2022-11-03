@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - composition # to delete
 
 jobs:
   cd:
@@ -15,7 +14,7 @@ jobs:
     - uses: mr-smithers-excellent/docker-build-push@v5
       name: Build and push docker image for api
       with:
-        image: mcwynar/sid-pg
+        image: michal299/sid-pg
         tags: api
         registry: docker.io
         dockerfile: api/Dockerfile
@@ -26,7 +25,7 @@ jobs:
     - uses: mr-smithers-excellent/docker-build-push@v5
       name: Build and push docker image for generator
       with:
-        image: mcwynar/sid-pg
+        image: michal299/sid-pg
         tags: generator
         registry: docker.io
         dockerfile: generator/Dockerfile
