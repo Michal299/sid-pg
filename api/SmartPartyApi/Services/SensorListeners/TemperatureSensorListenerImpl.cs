@@ -1,29 +1,90 @@
-using IHostApplicationLifetime = Microsoft.Extensions.Hosting.IHostApplicationLifetime;
+using RabbitMQ.Client.Exceptions;
 
 namespace SmartPartyApi.Services.SensorListeners;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using System;
 
 public class TemperatureSensorListener : IHostedService, IDisposable {
 
     private readonly ILogger _logger;
+    private readonly IConfiguration _config;
     private readonly Task _listenerTask;
     private readonly CancellationTokenSource _cancellationTokenSource;
 
-    public TemperatureSensorListener(ILogger<TemperatureSensorListener> logger)
+    public TemperatureSensorListener(ILogger<TemperatureSensorListener> logger,
+                                        IConfiguration config)
     {
         this._logger = logger;
+        this._config = config;
         _cancellationTokenSource = new CancellationTokenSource();
         this._listenerTask = new Task(() => ListenerTask(_cancellationTokenSource.Token), _cancellationTokenSource.Token);
     }
 
     private void ListenerTask(CancellationToken token)
     {
-        int i = 0;
+
+        (IConnection connection, IModel channel) = ConnectToBroker(10, 2, token);
+
+        channel.QueueDeclare(queue: "temperature_sensor",
+                durable: false,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+
+        var consumer = new EventingBasicConsumer(channel);
+        consumer.Received += (model, ea) =>
+        {
+            var body = ea.Body.ToArray();
+            var message = BitConverter.ToInt32(body);
+            _logger.Log(LogLevel.Information, $"Received: {message}");
+        };
+        channel.BasicConsume(
+                queue: _config.GetValue<String>("QueueNameTemperature"),
+                autoAck: true,
+                consumer: consumer
+            );
+
+        _logger.Log(LogLevel.Information, "Start listening for temperature messages...");
+
         while (!token.IsCancellationRequested)
         {
-            _logger.Log(LogLevel.Information, $"{i} loop");
-            Task.Delay(30000, token).Wait(token);
-            i++;
+            Task.Delay(1000, token).Wait(token);
         }
+        channel.Close();
+        connection.Close();
+    }
+
+    private (IConnection, IModel) ConnectToBroker(int numberOfRetries, int waitSecondsBetweenRetries, CancellationToken cancellationToken)
+    {
+        var factory = new ConnectionFactory()
+        {
+            HostName = _config.GetValue<String>("RabbitHost"),
+            UserName = _config.GetValue<String>("RabbitUsername"),
+            Password = _config.GetValue<String>("RabbitPassword"),
+            Port =  _config.GetValue<Int32>("RabbitPort")
+        };
+        var i = (int) TimeSpan.FromMinutes(1).TotalMilliseconds;
+        var retries = 0;
+        while (!cancellationToken.IsCancellationRequested && retries <= numberOfRetries)
+        {
+            try
+            {
+                IConnection connection = factory.CreateConnection();
+                IModel channel = connection.CreateModel();
+                _logger.Log(LogLevel.Information, "Succesfully obtained connection to message broker");
+                return (connection, channel);
+            } catch(BrokerUnreachableException exception)
+            {
+                _logger.Log(LogLevel.Warning, "Listener cannot connect to broker due to exception: {}. Next attempt will be made in: {}s. Already made retries: {}",
+                        exception.Message,
+                        waitSecondsBetweenRetries,
+                        retries);
+                Task.Delay((int)TimeSpan.FromSeconds(waitSecondsBetweenRetries).TotalMilliseconds, cancellationToken).Wait(cancellationToken);
+                retries++;
+            }
+        }
+        throw new SystemException("Cannot connect to message broker.");
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -42,5 +103,8 @@ public class TemperatureSensorListener : IHostedService, IDisposable {
 
     public void Dispose()
     {
+        _cancellationTokenSource.Cancel();
+        _logger.Log(LogLevel.Information, "Listener has been disposed.");
     }
+
 }
