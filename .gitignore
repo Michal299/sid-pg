@@ -663,3 +663,5 @@ fabric.properties
 
 *.sln
 *.vscode
+*.fleet
+*.idea

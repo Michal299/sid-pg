@@ -1,3 +1,6 @@
+using SmartPartyApi.Services;
+using SmartPartyApi.Services.SensorListeners;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -10,6 +13,7 @@ builder.Services.AddCors(policyBuilder =>
     policyBuilder.AddDefaultPolicy(policy =>
         policy.WithOrigins("*").AllowAnyHeader().AllowAnyHeader())
 );
+builder.Services.AddHostedService<TemperatureSensorListener>();
 
 var app = builder.Build();
 
