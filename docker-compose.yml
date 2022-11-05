@@ -33,8 +33,6 @@ services:
     restart: on-failure
     depends_on:
       - rabbitmq
-    ports:
-      - 8080:80
     networks:
       - net
 
