@@ -11,13 +11,16 @@ public class TemperatureSensorListener : IHostedService, IDisposable {
     private readonly IConfiguration _config;
     private readonly Task _listenerTask;
     private readonly CancellationTokenSource _cancellationTokenSource;
+    private readonly TemperatureSensorService _temperatureSensorService;
 
     public TemperatureSensorListener(ILogger<TemperatureSensorListener> logger,
-                                        IConfiguration config)
+                                        IConfiguration config,
+                                        TemperatureSensorService temperatureSensorService)
     {
         this._logger = logger;
         this._config = config;
-        _cancellationTokenSource = new CancellationTokenSource();
+        this._temperatureSensorService = temperatureSensorService;
+        this._cancellationTokenSource = new CancellationTokenSource();
         this._listenerTask = new Task(() => ListenerTask(_cancellationTokenSource.Token), _cancellationTokenSource.Token);
     }
 
@@ -36,17 +39,17 @@ public class TemperatureSensorListener : IHostedService, IDisposable {
         consumer.Received += (model, ea) =>
         {
             var body = ea.Body.ToArray();
-            var message = BitConverter.ToInt32(body);
-            _logger.Log(LogLevel.Information, $"Received: {message}");
+            var value = BitConverter.ToInt32(body);
+            _temperatureSensorService.AddTemperatureRecord(value).Wait(token);
+            _logger.Log(LogLevel.Debug, $"Received: {value}");
         };
         channel.BasicConsume(
-                queue: _config.GetValue<String>("QueueNameTemperature"),
+                queue: _config.GetRequiredSection("Rabbit").GetValue<String>("QueueNameTemperature"),
                 autoAck: true,
                 consumer: consumer
             );
 
         _logger.Log(LogLevel.Information, "Start listening for temperature messages...");
-
         while (!token.IsCancellationRequested)
         {
             Task.Delay(1000, token).Wait(token);
@@ -59,12 +62,12 @@ public class TemperatureSensorListener : IHostedService, IDisposable {
     {
         var factory = new ConnectionFactory()
         {
-            HostName = _config.GetValue<String>("RabbitHost"),
-            UserName = _config.GetValue<String>("RabbitUsername"),
-            Password = _config.GetValue<String>("RabbitPassword"),
-            Port =  _config.GetValue<Int32>("RabbitPort")
+            HostName = _config.GetRequiredSection("Rabbit").GetValue<String>("Host"),
+            UserName = _config.GetRequiredSection("Rabbit").GetValue<String>("Username"),
+            Password = _config.GetRequiredSection("Rabbit").GetValue<String>("Password"),
+            Port =  _config.GetRequiredSection("Rabbit").GetValue<Int32>("Port")
         };
-        var i = (int) TimeSpan.FromMinutes(1).TotalMilliseconds;
+
         var retries = 0;
         while (!cancellationToken.IsCancellationRequested && retries <= numberOfRetries)
         {
