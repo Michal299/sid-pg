@@ -18,7 +18,7 @@ public class TemperaturesModel : PageModel {
 
     public void OnGet()
     {
-        var response = _client.GetAsync("http://localhost:8080/api/1/temperatureSensor").Result;
+        var response = _client.GetAsync("http://api/api/1/temperatureSensor").Result;
         var body = response.Content.ReadFromJsonAsync<List<TemperatureRecordModel>>().Result;
         if (body != null) Measurements = body;
     }

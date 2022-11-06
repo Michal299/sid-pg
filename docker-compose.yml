@@ -35,6 +35,19 @@ services:
       - rabbitmq
     networks:
       - net
+  
+  frontend:
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile
+    container_name: frontend
+    restart: on-failure
+    depends_on:
+      - api
+    networks:
+      - net
+    ports:
+      - "8080:80"
 
 networks:
   net:
