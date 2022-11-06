@@ -28,20 +28,19 @@ public class TemperatureSensorListener : IHostedService, IDisposable {
     {
 
         (IConnection connection, IModel channel) = ConnectToBroker(10, 2, token);
-
-        channel.QueueDeclare(queue: "temperature_sensor",
+        channel.QueueDeclare(queue: _config.GetRequiredSection("Rabbit").GetValue<String>("QueueNameTemperature"),
                 durable: false,
                 exclusive: false,
                 autoDelete: false,
                 arguments: null);
 
         var consumer = new EventingBasicConsumer(channel);
-        consumer.Received += (model, ea) =>
+        consumer.Received += async (model, ea) =>
         {
             var body = ea.Body.ToArray();
             var value = BitConverter.ToInt32(body);
-            _temperatureSensorService.AddTemperatureRecord(value).Wait(token);
-            _logger.Log(LogLevel.Debug, $"Received: {value}");
+            _logger.Log(LogLevel.Information, $"Received: {value}");
+            await _temperatureSensorService.AddTemperatureRecord(value);
         };
         channel.BasicConsume(
                 queue: _config.GetRequiredSection("Rabbit").GetValue<String>("QueueNameTemperature"),
