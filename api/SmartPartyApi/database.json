@@ -1,7 +1,7 @@
 {
     "DatabaseConfiguration": {
-        "ConnectionString": "mongodb://mongodb:27017",
-        "DatabaseName": "SmartParty",
+        "ConnectionString": "mongodb://db_url",
+        "DatabaseName": "db_name",
         "TemperatureCollectionName": "Temperature"
     },
 }
