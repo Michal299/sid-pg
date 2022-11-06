@@ -1,6 +1,6 @@
-﻿using RabbitMQ.Client;
+﻿using Microsoft.Extensions.Configuration;
+using RabbitMQ.Client;
 using System;
-using System.Configuration;
 
 namespace generator
 {
@@ -15,20 +15,29 @@ namespace generator
 
         public TemperatureSensor(IModel channel) 
         {
-            this.random = new Random();
-            this.queueName = "temperature_sensor";
-            this.min = Int32.Parse(ConfigurationManager.AppSettings["MIN_TEMPERATURE"]);
-            this.max = Int32.Parse(ConfigurationManager.AppSettings["MAX_TEMPERATURE"]);
-            int numerator = Int32.Parse(ConfigurationManager.AppSettings["MINUTE_IN_MILISECONDS"]); 
-            int divisor = Int32.Parse(ConfigurationManager.AppSettings["HOW_MANY_DATA_PER_MINUTE_FOR_TEMPERATURE"]);
-            this.timeout = numerator / divisor;
+            random = new Random();
+            queueName = "temperature_sensor";
             this.channel = channel;
             this.channel.QueueDeclare(queueName, false, false, false, null);
+            getConfigVars();
+        }
+
+        private void getConfigVars() 
+        {
+            IConfiguration config = new ConfigurationBuilder()
+                   .AddJsonFile($"appsettings.json", false, true)
+                   .Build();
+            min = config.GetValue<Int32>("MIN_TEMPERATURE");
+            max = config.GetValue<Int32>("MAX_TEMPERATURE");
+            int numerator = (int)TimeSpan.FromMinutes(1).TotalMilliseconds;
+            int divisor = config.GetValue<Int32>("HOW_MANY_DATA_PER_MINUTE_FOR_TEMPERATURE");
+            timeout = numerator / divisor;
         }
 
         public void publish() {
             int x = random.Next(min, max);
             System.Threading.Thread.Sleep(timeout);
+            Console.WriteLine($"Publishing generated value: {x}");
             channel.BasicPublish("", queueName, null, BitConverter.GetBytes(x));
         }
     }
