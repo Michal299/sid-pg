@@ -13,25 +13,22 @@ namespace generator
         private int max;
         private int timeout;
 
-        public TemperatureSensor(IModel channel) 
+        public TemperatureSensor(IModel channel, IConfigurationSection configSection)
         {
+            getConfigVars(configSection);
             random = new Random();
-            queueName = "temperature_sensor";
             this.channel = channel;
             this.channel.QueueDeclare(queueName, false, false, false, null);
-            getConfigVars();
         }
 
-        private void getConfigVars() 
+        private void getConfigVars(IConfigurationSection config)
         {
-            IConfiguration config = new ConfigurationBuilder()
-                   .AddJsonFile($"appsettings.json", false, true)
-                   .Build();
-            min = config.GetValue<Int32>("MIN_TEMPERATURE");
-            max = config.GetValue<Int32>("MAX_TEMPERATURE");
+            min = config.GetValue<Int32>("Min");
+            max = config.GetValue<Int32>("Max");
             int numerator = (int)TimeSpan.FromMinutes(1).TotalMilliseconds;
-            int divisor = config.GetValue<Int32>("HOW_MANY_DATA_PER_MINUTE_FOR_TEMPERATURE");
+            int divisor = config.GetValue<Int32>("HowManyDataPerMinute");
             timeout = numerator / divisor;
+            queueName = config.GetValue<String>("QueueName");
         }
 
         public void publish() {

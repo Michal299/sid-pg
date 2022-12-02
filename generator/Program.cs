@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 
 namespace generator
@@ -17,10 +18,13 @@ namespace generator
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
-                TemperatureSensor sensor = new TemperatureSensor(channel);
+                var config = new ConfigurationBuilder()
+                    .AddJsonFile($"appsettings.json", false, true)
+                    .Build();
+                var temperatureSensor = new TemperatureSensor(channel, config.GetSection("TemperatureSensor"));
                 while (true)
                 {
-                    sensor.publish();
+                    temperatureSensor.publish();
                 }
             }
         }
