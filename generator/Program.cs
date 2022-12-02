@@ -21,7 +21,7 @@ namespace generator
                 var config = new ConfigurationBuilder()
                     .AddJsonFile($"appsettings.json", false, true)
                     .Build();
-                var temperatureSensor = new TemperatureSensor(channel, config.GetSection("TemperatureSensor"));
+                var temperatureSensor = new GenericSensor(channel, config.GetSection("TemperatureSensor"));
                 while (true)
                 {
                     temperatureSensor.publish();

@@ -4,7 +4,7 @@ using System;
 
 namespace generator
 {
-    class TemperatureSensor
+    class GenericSensor
     {
         private Random random;
         private string queueName;
@@ -13,7 +13,7 @@ namespace generator
         private int max;
         private int timeout;
 
-        public TemperatureSensor(IModel channel, IConfigurationSection configSection)
+        public GenericSensor(IModel channel, IConfigurationSection configSection)
         {
             getConfigVars(configSection);
             random = new Random();
@@ -34,7 +34,7 @@ namespace generator
         public void publish() {
             int x = random.Next(min, max);
             System.Threading.Thread.Sleep(timeout);
-            Console.WriteLine($"Publishing generated value: {x}");
+            Console.WriteLine($"{queueName.ToUpper()}: {x}");
             channel.BasicPublish("", queueName, null, BitConverter.GetBytes(x));
         }
     }
