@@ -10,4 +10,6 @@ public class TemperatureRecord {
     public string? Id { get; set; }
     public decimal Value {get; set;}
     public DateTime MeasuredAt {get; set;}
+    [BsonRepresentation(BsonType.String)]
+    public string? SensorId {get; set;}
 }

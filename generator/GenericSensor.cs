@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 using System;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 
 namespace generator
@@ -13,14 +16,16 @@ namespace generator
         private int min;
         private int max;
         private int timeout;
+        public string SensorId {get; private set;}
         public Boolean Started {get; set;}
 
-        public GenericSensor(IModel channel, IConfigurationSection configSection)
+        public GenericSensor(IModel channel, IConfigurationSection configSection, string sensorId)
         {
             getConfigVars(configSection);
             random = new Random();
             this.channel = channel;
             this.channel.QueueDeclare(queueName, false, false, false, null);
+            SensorId = sensorId;
         }
 
         private void getConfigVars(IConfigurationSection config)
@@ -38,10 +43,16 @@ namespace generator
             {
                 while (Started)
                 {
-                    int x = random.Next(min, max);
+                    var message = new Message()
+                    {
+                        MeasureTime = DateTime.Now,
+                        MeasureValue = random.Next(min, max),
+                        SensorId = SensorId
+                    };
+                    var jsonMessage = JsonSerializer.Serialize(message);
                     Thread.Sleep(timeout);
-                    Console.WriteLine($"{queueName.ToUpper()}: {x}");
-                    channel.BasicPublish("", queueName, null, BitConverter.GetBytes(x));
+                    Console.WriteLine($"{queueName.ToUpper()}: {message}");
+                    channel.BasicPublish("", queueName, null, Encoding.UTF8.GetBytes(jsonMessage));
                 }
             });
             return publishingThread;

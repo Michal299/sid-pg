@@ -12,12 +12,13 @@ public class TemperatureSensorService {
         this._temperatureRepository = temperatureRepository;
     }
 
-    public async Task AddTemperatureRecord(int temperatureValue)
+    public async Task AddTemperatureRecord(Message temperatureMessage)
     {
         var temperature = new TemperatureRecord
         {
-            Value = temperatureValue,
-            MeasuredAt = DateTime.Now
+            Value = temperatureMessage.MeasureValue,
+            MeasuredAt = DateTime.Now,
+            SensorId = temperatureMessage.SensorId
         };
         await _temperatureRepository.CreateAsync(temperature);
     }

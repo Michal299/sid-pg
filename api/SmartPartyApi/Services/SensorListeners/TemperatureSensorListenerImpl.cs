@@ -1,3 +1,6 @@
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using RabbitMQ.Client.Exceptions;
 
 namespace SmartPartyApi.Services.SensorListeners;
@@ -12,7 +15,6 @@ public class TemperatureSensorListener : IHostedService, IDisposable {
     private readonly Task _listenerTask;
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly TemperatureSensorService _temperatureSensorService;
-
     public TemperatureSensorListener(ILogger<TemperatureSensorListener> logger,
                                         IConfiguration config,
                                         TemperatureSensorService temperatureSensorService)
@@ -38,9 +40,10 @@ public class TemperatureSensorListener : IHostedService, IDisposable {
         consumer.Received += async (model, ea) =>
         {
             var body = ea.Body.ToArray();
-            var value = BitConverter.ToInt32(body);
-            _logger.Log(LogLevel.Information, $"Received: {value}");
-            await _temperatureSensorService.AddTemperatureRecord(value);
+            var value = Encoding.UTF8.GetString(body);
+            var messageObject = (Message) JsonSerializer.Deserialize(value, typeof(Message))!;
+            _logger.Log(LogLevel.Information, $"Received: {messageObject}");
+            await _temperatureSensorService.AddTemperatureRecord(messageObject);
         };
         channel.BasicConsume(
                 queue: _config.GetRequiredSection("Rabbit").GetValue<String>("QueueNameTemperature"),

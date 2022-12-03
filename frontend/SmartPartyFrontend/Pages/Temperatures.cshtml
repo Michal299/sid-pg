@@ -32,6 +32,7 @@
         <table class="table table-striped">
             <thead>
             <tr>
+                <th>Sensor ID</th>
                 <th>Date</th>
                 <th>Value [Celsius]</th>
             </tr>
@@ -40,6 +41,7 @@
             @foreach (var measure in Model.Measurements.OrderByDescending(x => x.MeasuredAt))
             {
                 <tr>
+                    <td>@measure.SensorId</td>
                     <td>@measure.MeasuredAt</td>
                     <td>@measure.Value</td>
                 </tr>
