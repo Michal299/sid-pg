@@ -50,7 +50,7 @@ public abstract class GenericSensorListener : IHostedService, IDisposable {
                 consumer: consumer
             );
 
-        _logger.Log(LogLevel.Information, "Start listening for temperature messages...");
+        _logger.Log(LogLevel.Information, "Start listening for messages...");
         while (!token.IsCancellationRequested)
         {
             Task.Delay(1000, token).Wait(token);
