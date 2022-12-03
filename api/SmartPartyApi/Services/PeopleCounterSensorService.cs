@@ -3,12 +3,12 @@ using SmartPartyApi.Repositories;
 
 namespace SmartPartyApi.Services;
 
-public class PoepleCounterSensorService {
+public class PeopleCounterSensorService {
 
 
     private readonly PeopleCounterSensorRepository _peopleCounterSensorRepository;
 
-    public PoepleCounterSensorService(PeopleCounterSensorRepository peopleCounterSensorRepository)
+    public PeopleCounterSensorService(PeopleCounterSensorRepository peopleCounterSensorRepository)
     {
         this._peopleCounterSensorRepository = peopleCounterSensorRepository;
     }

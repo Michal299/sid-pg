@@ -1,12 +1,12 @@
 namespace SmartPartyApi.Services.SensorListeners;
 
-public class PoepleCounterListener : GenericSensorListener
+public class PeopleCounterListener : GenericSensorListener
 {
-    private readonly PoepleCounterSensorService _service;
+    private readonly PeopleCounterSensorService _service;
 
-    public PoepleCounterListener(ILogger<PoepleCounterListener> logger,
+    public PeopleCounterListener(ILogger<PeopleCounterListener> logger,
                                     IConfiguration config,
-                                    PoepleCounterSensorService poepleCounterSensorService)
+                                    PeopleCounterSensorService poepleCounterSensorService)
         : base(logger, config)
     {
         this._service = poepleCounterSensorService;
