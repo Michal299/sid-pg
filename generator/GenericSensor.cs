@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 using System;
+using System.Threading;
 
 namespace generator
 {
@@ -12,6 +13,7 @@ namespace generator
         private int min;
         private int max;
         private int timeout;
+        public Boolean Started {get; set;}
 
         public GenericSensor(IModel channel, IConfigurationSection configSection)
         {
@@ -31,11 +33,26 @@ namespace generator
             queueName = config.GetValue<String>("QueueName");
         }
 
-        public void publish() {
-            int x = random.Next(min, max);
-            System.Threading.Thread.Sleep(timeout);
-            Console.WriteLine($"{queueName.ToUpper()}: {x}");
-            channel.BasicPublish("", queueName, null, BitConverter.GetBytes(x));
+        public Thread publishingThread() {
+            var publishingThread = new Thread(() =>
+            {
+                while (Started)
+                {
+                    int x = random.Next(min, max);
+                    Thread.Sleep(timeout);
+                    Console.WriteLine($"{queueName.ToUpper()}: {x}");
+                    channel.BasicPublish("", queueName, null, BitConverter.GetBytes(x));
+                }
+            });
+            return publishingThread;
+        }
+
+        public override string ToString()
+        {
+            return $"QueueName: {queueName} " +
+                $"Min: {min} " +
+                $"Max: {max} " +
+                $"Timeout: {timeout}";
         }
     }
 }
