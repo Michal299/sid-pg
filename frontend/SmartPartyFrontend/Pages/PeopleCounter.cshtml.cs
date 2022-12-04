@@ -5,17 +5,17 @@ namespace SmartPartyFrontend.Pages;
 
 public class PeopleCounterModel : PageModel
 {
-    private readonly ILogger<PeopleCounterModel> _logger;
     private readonly HttpClient _client = new();
-    
-    public List<PeopleCounterRecord> Measurements { get; set; }
+    private readonly ILogger<PeopleCounterModel> _logger;
 
     public PeopleCounterModel(ILogger<PeopleCounterModel> logger)
     {
-        this._logger = logger;
+        _logger = logger;
         Measurements = new List<PeopleCounterRecord>();
     }
-    
+
+    public List<PeopleCounterRecord> Measurements { get; set; }
+
     public void OnGet()
     {
         var response = _client.GetAsync("http://SI_175132_api/api/1/peopleCounter").Result;
