@@ -1,0 +1,36 @@
+@page
+@model PeopleCounterModel
+@{
+    ViewData["Title"] = "People counter";
+}
+
+<div class="text-center">
+    <h1>@ViewData["Title"]</h1>
+    <p>Use this page to display people counters</p>
+
+    <div>
+        <h2>All measurements</h2>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Sensor ID</th>
+                <th>Date</th>
+                <th>Number of people</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var measurement in Model.Measurements.OrderByDescending(x => x.MeasuredAt))
+            {
+                <tr>
+                    <td>@measurement.SensorId</td>
+                    <td>@measurement.MeasuredAt</td>
+                    <td>@measurement.NumberOfPeople</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    <div>
+    </div>
+</div>

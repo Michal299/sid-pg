@@ -21,9 +21,12 @@ builder.Services.AddCors(policyBuilder =>
     policyBuilder.AddDefaultPolicy(policy =>
         policy.WithOrigins("*").AllowAnyHeader().AllowAnyHeader())
 );
+builder.Services.AddSingleton<PeopleCounterSensorService>();
 builder.Services.AddSingleton<TemperatureSensorService>();
+builder.Services.AddSingleton<PeopleCounterSensorRepository>();
 builder.Services.AddSingleton<TemperatureSensorRepository>();
 builder.Services.AddHostedService<TemperatureSensorListener>();
+builder.Services.AddHostedService<PeopleCounterListener>();
 builder.Services.Configure<DatabaseSettings>(builder.Configuration.GetSection("DatabaseConfiguration"));
 
 var app = builder.Build();

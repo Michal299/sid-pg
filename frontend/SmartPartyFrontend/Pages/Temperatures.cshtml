@@ -1,29 +1,30 @@
 @page
+@using System.Text.Json
 @model TemperaturesModel
 @{
-    ViewData["Title"] = "Temperatures measurements";
+ViewData["Title"] = "Temperatures measurements";
 }
 
 <div class="text-center">
     <h1>@ViewData["Title"]</h1>
     <p>Use this page to detail temperatures measurements</p>
-    
+
     <div>
         <h2>Statistics</h2>
         <table class="table">
             <tbody>
-            <tr>
-                <td>Max</td>
-                <td>@Model.Measurements.MaxBy(x => x.Value).Value</td>
-            </tr>
-            <tr>
-                <td>Min</td>
-                <td>@Model.Measurements.MinBy(x => x.Value).Value</td>
-            </tr>
-            <tr>
-                <td>Average</td>
-                <td>@Model.Measurements.Average(x => x.Value)</td>
-            </tr>
+                <tr>
+                    <td>Max</td>
+                    <td>@Model.Measurements.MaxBy(x => x.Value).Value</td>
+                </tr>
+                <tr>
+                    <td>Min</td>
+                    <td>@Model.Measurements.MinBy(x => x.Value).Value</td>
+                </tr>
+                <tr>
+                    <td>Average</td>
+                    <td>@Model.Measurements.Average(x => x.Value)</td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -31,22 +32,50 @@
         <h2>All measurements</h2>
         <table class="table table-striped">
             <thead>
-            <tr>
-                <th>Sensor ID</th>
-                <th>Date</th>
-                <th>Value [Celsius]</th>
-            </tr>
+                <tr>
+                    <th>Sensor ID</th>
+                    <th>Date</th>
+                    <th>Value [Celsius]</th>
+                </tr>
             </thead>
             <tbody>
-            @foreach (var measure in Model.Measurements.OrderByDescending(x => x.MeasuredAt))
-            {
+                @foreach (var measure in Model.Measurements.OrderByDescending(x => x.MeasuredAt))
+                {
                 <tr>
                     <td>@measure.SensorId</td>
                     <td>@measure.MeasuredAt</td>
                     <td>@measure.Value</td>
                 </tr>
-            }
+                }
             </tbody>
         </table>
     </div>
+    
+    <div>
+        <div id="temperatureChart">
+        </div>        
+    </div>
 </div>
+
+@{
+    var XLabels = Model.Measurements.Select(i => i.MeasuredAt).ToList();
+    var YValues = Model.Measurements.Select(i => i.Value).ToList();
+}
+<script src='https://cdn.plot.ly/plotly-2.16.1.min.js'></script>
+<script>
+    let traces = [];
+    for (const group of @Html.Raw(Json.Serialize(@Model.GetValues()))) {
+        let trace = {
+            x: group.xLabels,
+            y: group.yValues,
+            type: 'lines+markers',
+            name: group.label
+        };
+        traces.push(trace);
+    }
+    var layout = {
+      title:'Temperature measurements from temperature sensors'
+    };
+    Plotly.newPlot('temperatureChart', traces, layout);
+
+</script>
